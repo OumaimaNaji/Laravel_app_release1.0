@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Dependences\GestionUserInterface;
 use App\Role;
 use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\ImageManagerStatic as Image;
 
 class UserController extends Controller
 {
@@ -76,28 +76,21 @@ class UserController extends Controller
         //
     }
 
-    public function profile(Request $request, $id)
+    public function profile(Request $request, $id, GestionUserInterface $gestionuser)
     {
-        //$user = User::find($id);
         if ($request->isMethod('post')){
-            if($request->hasFile('image')) {
-                $avatar = $request->file('image');
-                $filename = time() . "." . $avatar->getClientOriginalExtension();
-                $name =  $avatar->getClientOriginalName();
 
-                Image::make($avatar)->resize(215,215)->save(public_path('avatars'.'/'.$name));
-
-                $user = Auth::user();
-                $user->image = $name;
-                //dd($user);
-                $user->save();
-                //User::where('id', $id)->update($request->except('password'));
-            }
+           if($gestionuser->update_profile($request, $id)){
             return back()->with('success', 'Updated Successfully!');
+           }
+           else{
+            return back()->with("error","Désolé mais votre profil n'est pas mis a jour !");
+           }
+
         }
-        else
-        {
+        else{
             return view('user.profile');
+
         }
     }
 
